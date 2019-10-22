@@ -1,0 +1,11 @@
+<litepal>
+
+    <dbname value="soil_respiration" />
+
+    <version value="1" />
+
+    <list>
+        <mapping class="com.example.soilrespiration.database.Sensor" />
+    </list>
+
+</litepal>
