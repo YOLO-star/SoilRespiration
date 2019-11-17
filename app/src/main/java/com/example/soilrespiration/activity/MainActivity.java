@@ -10,6 +10,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.CardView;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -23,6 +24,7 @@ public class MainActivity extends AppCompatActivity {
 
     private DrawerLayout mDrawerLayout;
     private Context mContext;
+    public static final String TAG = "MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent_query);
             }
         });
+        Log.d(TAG,"onCreate");
         //Button collection = (Button) findViewById(R.id.data_collect);
        // Button analysis = (Button) findViewById(R.id.data_analyze);
         //Button sync = (Button) findViewById(R.id.data_synchronization);
@@ -89,26 +92,40 @@ public class MainActivity extends AppCompatActivity {
         }
         return true;
     }
-    /*
+
     @Override
-    public void onClick(View v) {
-        switch (v.getId()){
-            case R.id.data_collect:
-                Intent intent = new Intent(MainActivity.this, ConnectActivity.class);
-                startActivity(intent);
-                break;
-            case R.id.data_analyze:
-                Intent intent1 = new Intent(MainActivity.this, QueryActivity.class);
-                startActivity(intent1);
-                break;
-            case R.id.data_synchronization:
-                Toast.makeText(MainActivity.this, "here is synchronize", Toast.LENGTH_SHORT).show();
-                break;
-            case R.id.reserve_Btn:
-                Toast.makeText(MainActivity.this, "here is reserve", Toast.LENGTH_SHORT).show();
-                break;
-                default:
-                    break;
-        }
-    }   */
+    protected void onStart() {
+        super.onStart();
+        Log.d(TAG, "onStart");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.d(TAG, "onPause");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.d(TAG, "onStop");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG, "onDestroy");
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        Log.d(TAG, "onRestart");
+    }
 }

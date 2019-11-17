@@ -12,16 +12,20 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".activity.QueryActivity"></activity>
-        <activity android:name=".activity.CollectActivity" />
-        <activity android:name=".activity.ConnectActivity" />
+        <activity android:name=".activity.QueryActivity" />
+        <activity android:name=".activity.CollectActivity"
+            android:launchMode="singleTop"/>
+        <activity android:name=".activity.ConnectActivity"
+            android:launchMode="singleTop"/>
 
         <service
             android:name=".service.SocketService"
             android:enabled="true"
             android:exported="true" />
 
-        <activity android:name=".activity.MainActivity">
+        <activity
+            android:name=".activity.MainActivity"
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

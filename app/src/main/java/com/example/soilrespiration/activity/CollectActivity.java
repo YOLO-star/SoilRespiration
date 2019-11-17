@@ -46,12 +46,14 @@ public class CollectActivity extends AppCompatActivity {
     Button riseBtn;
     @BindView(R.id.down_Btn)
     Button downBtn;
-    @BindView(R.id.auto_Btn)
-    Button autoBtn;
+    @BindView(R.id.disconnect_Btn)
+    Button disconnectBtn;
     private ServiceConnection sc;
     public SocketService socketService;
     private List<ShowAll> showAllList = new ArrayList<>();
     private QueryAdapter adapter;
+    public static final String TAG = "CollectActivity";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,6 +67,7 @@ public class CollectActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(layoutManager);
         adapter = new QueryAdapter(showAllList);
         recyclerView.setAdapter(adapter);
+        Log.d(TAG, "onCreate");
     }
 
     private void bindSocketService(){
@@ -123,18 +126,57 @@ public class CollectActivity extends AppCompatActivity {
         socketService.sendOrder(cmd);
     }
 
-    @OnClick(R.id.auto_Btn)
-    public void onAutoClicked(){
-        String cmd = "auto";
-        socketService.sendOrder(cmd);
+    @OnClick(R.id.disconnect_Btn)
+    public void setDisconnectBtn(){
+        unbindService(sc);
+        Intent intent = new Intent(getApplicationContext(), SocketService.class);
+        stopService(intent);
+        Intent intent1 = new Intent(CollectActivity.this, ConnectActivity.class);
+        startActivity(intent1);
+        this.finish();
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent intent = new Intent(CollectActivity.this, MainActivity.class);
+        startActivity(intent);
+        super.onBackPressed();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.d(TAG, "onStart");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.d(TAG, "onPause");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.d(TAG, "onStop");
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        Log.d(TAG, "onDestroy");
         EventBus.getDefault().unregister(this);
-        unbindService(sc);
-        Intent intent = new Intent(getApplicationContext(), SocketService.class);
-        stopService(intent);
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        Log.d(TAG, "onRestart");
     }
 }

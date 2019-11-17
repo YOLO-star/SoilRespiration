@@ -36,7 +36,7 @@ public class SocketService extends Service {
     /*连接线程*/
     private Thread connectThread;
     private Timer timer = new Timer();  //A facility for threads to schedule tasks for future execution in a background thread.
-    //private OutputStream outputStream;
+    private OutputStream outputStreamBeat;
     private DataOutputStream outputStream;
     private InputStream inputStream = null;
     //private Callback callback;
@@ -106,8 +106,8 @@ public class SocketService extends Service {
                             EventBus.getDefault().post(msg);
                             /*接收数据*/
                             receiveData();
-                            /*发送心跳数据
-                            sendBeatData();  */
+                            /*发送心跳数据*/
+                            sendBeatData();
                       }
                     }catch (IOException e){
                         e.printStackTrace();
@@ -220,7 +220,6 @@ public class SocketService extends Service {
     }
 
     /*定时发送数据*/
-    /*
     private void sendBeatData(){
         if (timer == null){
             timer = new Timer();
@@ -231,11 +230,11 @@ public class SocketService extends Service {
                 @Override
                 public void run() {
                     try {
-                        outputStream = socket.getOutputStream();
+                        outputStreamBeat = socket.getOutputStream();
 
                         //这里的编码方式根据你的需求去改
-                        outputStream.write(("test").getBytes("gbk"));
-                        outputStream.flush();
+                        outputStreamBeat.write(("test").getBytes("gbk"));
+                        outputStreamBeat.flush();
                     }catch (Exception e){
                         //发送失败说明socket断开了或者出现了其他错误
                         toastMsg("连接断开，正在重连");
@@ -247,7 +246,7 @@ public class SocketService extends Service {
             };
         }
         timer.schedule(task, 0, 2000);
-    }  */
+    }
 
     /*释放资源*/
     private void releaseSocket(){

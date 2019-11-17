@@ -1,13 +1,16 @@
 package com.example.soilrespiration.activity;
 
 import android.app.ActivityManager;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -40,6 +43,7 @@ public class ConnectActivity extends AppCompatActivity {
     private SharedPreferences.Editor editor;
 
     private boolean isConnectSuccess = false;
+    public static final String TAG = "ConnectActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +65,7 @@ public class ConnectActivity extends AppCompatActivity {
         if (!EventBus.getDefault().isRegistered(this)){
             EventBus.getDefault().register(this);
         }
+        Log.d(TAG, "onCreate");
     }
 
     @OnClick(R.id.connectBtn)
@@ -83,11 +88,11 @@ public class ConnectActivity extends AppCompatActivity {
         }
         editor.apply();
 
-        /*先判断Service是否正在运行，如果正在运行，给出提示，防止启动多个service*/
-        if (isServiceRunning("com.example.socketdemo.service.SocketService")){
+        /*先判断Service是否正在运行，如果正在运行，给出提示，防止启动多个service
+        if (isServiceRunning("com.example.soilrespiration.service.SocketService")){
             Toast.makeText(this, "连接服务已运行",Toast.LENGTH_SHORT).show();
             return;
-        }
+        }  */
 
         /*启动service*/
         Intent intent = new Intent(getApplicationContext(), SocketService.class);
@@ -105,7 +110,7 @@ public class ConnectActivity extends AppCompatActivity {
             Intent intent = new Intent(this, CollectActivity.class);
             startActivity(intent);
 
-            finish();
+            this.finish();
         }
     }
 
@@ -126,6 +131,51 @@ public class ConnectActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        Log.d(TAG, "onStart");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (isServiceRunning("com.example.soilrespiration.service.SocketService")){
+            AlertDialog.Builder dialog = new AlertDialog.Builder(ConnectActivity.this);
+            dialog.setTitle("有一个任务正在进行中");
+            dialog.setMessage("点击进入");
+            dialog.setCancelable(false);
+            dialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Intent intent = new Intent(ConnectActivity.this, CollectActivity.class);
+                    startActivity(intent);
+                }
+            });
+            dialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Intent intent = new Intent(ConnectActivity.this, MainActivity.class);
+                    startActivity(intent);
+                }
+            });
+            dialog.show();
+        }
+        Log.d(TAG, "onResume");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.d(TAG, "onPause");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.d(TAG, "onStop");
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         /*unregister EventBus*/
@@ -133,10 +183,17 @@ public class ConnectActivity extends AppCompatActivity {
             EventBus.getDefault().unregister(this);
         }
 
-        /*如果没有连接成功，则退出的时候停止服务*/
+        /*如果没有连接成功，则退出的时候停止服务
         if (!isConnectSuccess){
             Intent intent = new Intent(this, SocketService.class);
             stopService(intent);
-        }
+        }  */
     }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        Log.d(TAG, "onRestart");
+    }
+
 }
