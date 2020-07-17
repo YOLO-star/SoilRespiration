@@ -10,4 +10,8 @@ public class Constants {
 
     /*EventBus msg*/
     public static final String CONNET_SUCCESS = "connectSuccess";
+
+    /*Internet Exception*/
+    public static final int HANDLER_HTTP_SEND_FAIL = 1001;
+    public static final int HANDLER_HTTP_RECEIVE_FAIL = 1002;
 }

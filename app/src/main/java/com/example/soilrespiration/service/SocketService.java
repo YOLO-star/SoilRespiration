@@ -1,6 +1,7 @@
 package com.example.soilrespiration.service;
 
 import android.app.Service;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.Handler;
@@ -9,23 +10,28 @@ import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.example.soilrespiration.common.CountTimer;
 import com.example.soilrespiration.common.EventMsg;
 import com.example.soilrespiration.common.Constants;
 import com.example.soilrespiration.common.EventTransfer;
+import com.example.soilrespiration.common.TimerEvent;
+import com.example.soilrespiration.database.Sensor;
+import com.example.soilrespiration.database.Task;
 import com.example.soilrespiration.util.Utility;
 
 import org.greenrobot.eventbus.EventBus;
+import org.litepal.crud.DataSupport;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.NoRouteToHostException;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -35,8 +41,9 @@ public class SocketService extends Service {
     private Socket socket;
     /*连接线程*/
     private Thread connectThread;
+    private Thread timerThread;
     private Timer timer = new Timer();  //A facility for threads to schedule tasks for future execution in a background thread.
-    private OutputStream outputStreamBeat;
+    //private OutputStream outputStreamBeat;
     private DataOutputStream outputStream;
     private InputStream inputStream = null;
     //private Callback callback;
@@ -45,6 +52,9 @@ public class SocketService extends Service {
     private String ip;
     private String port;
     private TimerTask task;  //A task that can be scheduled for one-time or repeated execution by a Timer.
+    private CountTimer countTimer;
+    private int cycleTimer;
+    private boolean isStop = false;
 
     /*默认重连*/
     private boolean isReConnect = true;
@@ -82,6 +92,9 @@ public class SocketService extends Service {
         /*初始化socket*/
         initSocket();
 
+        //初始化定时器
+        initTimer();
+
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -106,8 +119,8 @@ public class SocketService extends Service {
                             EventBus.getDefault().post(msg);
                             /*接收数据*/
                             receiveData();
-                            /*发送心跳数据*/
-                            sendBeatData();
+                            /*发送心跳数据
+                            sendBeatData();  */
                       }
                     }catch (IOException e){
                         e.printStackTrace();
@@ -139,26 +152,15 @@ public class SocketService extends Service {
         });
     }
 
-    /*public void setCallback(Callback callback){
-        this.callback = callback;
-    }
-
-    public static interface Callback{
-        void onDataChange(String data);
-    }  */
-
     /*接收数据*/
     private void receiveData(){
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    //final StringBuilder sb = new StringBuilder();
                     inputStream = socket.getInputStream();
-                    //byte[] buffer = new byte[1024];
                     DataInputStream input = new DataInputStream(inputStream);
                     while (socket.isConnected()){
-                        //int readSize = input.read(buffer);
                         /* The process of unpacking*/
                         int totalLen = input.readInt();
                         int flag = input.readInt();
@@ -167,21 +169,10 @@ public class SocketService extends Service {
                             input.readFully(data);
                             String msg = new String(data);
                             EventBus.getDefault().post(new EventTransfer(msg));
-                            Utility.handleDatabase(msg);
+                            if (!isStop) {
+                                Utility.handleSensor(msg);
+                            }
                         }
-                        //if (readSize > 0){
-                            //String value = new String(buffer,0,readSize);
-                            //Log.d("SocketService: ", );
-                            //String clientInputStr = input.readUTF();
-                            //EventBus.getDefault().post(new EventTransfer(clientInputStr));
-                        //}
-
-                        /* int readSize = inputStream.read(buffer);
-                        if (readSize > 0)
-                        {
-                            sb.append(new String(buffer, 0, readSize));
-                            callback.onDataChange(sb.toString());
-                        }  */
                     }
                 }catch (IOException e){
                     /*接收失败,说明socket断开了或者出现了其他错误*/
@@ -202,10 +193,8 @@ public class SocketService extends Service {
                 @Override
                 public void run() {
                     try {
-                        //outputStream = socket.getOutputStream();
                         outputStream  = new DataOutputStream(socket.getOutputStream());
                         if (outputStream != null){
-                            //outputStream.write((order).getBytes("UTF-8"));
                             outputStream.writeUTF(order);
                             outputStream.flush();  //Flushes this output stream and forces any buffered output bytes to be written out.
                         }
@@ -218,8 +207,75 @@ public class SocketService extends Service {
             toastMsg("socket连接错误，请重试");
         }
     }
+    /*
+    public void setCallback(Callback callback){
+        this.callback = callback;
+    }
 
-    /*定时发送数据*/
+    public static interface Callback{
+        void onDataChange(long data);
+    }  */
+
+    public void initTimer(){
+        countTimer = new CountTimer(1000){
+            @Override
+            protected void onStart(long millisFly) {
+                EventBus.getDefault().post(new TimerEvent(millisFly));
+            }
+
+            @Override
+            protected void onStop(long millisFly) {
+                EventBus.getDefault().post(new TimerEvent(millisFly));
+            }
+
+            @Override
+            protected void onTick(long millisFly) {
+                EventBus.getDefault().post(new TimerEvent(millisFly));
+                int temp = (int) (millisFly / 1000);
+                if (temp % cycleTimer == 0){
+                    int process = temp / cycleTimer;
+                    if (process > 0){
+                        Utility.handleTask();
+                    }
+                }
+            }
+        };
+    }
+
+    public void startTimer(final int cycletime){
+        if (DataSupport.count(Sensor.class) == 0){  //Sensor表为空
+            Utility.setDelta(0);
+        }else{  //Sensor表不为空
+            int  delta = DataSupport.findLast(Sensor.class).getId();
+            ContentValues values = new ContentValues();
+            values.put("seq", Integer.toString(delta));
+            DataSupport.updateAll("sqlite_sequence", values, "name = ?", "sensor");  // 重置sensor表的主键值
+            Utility.setDelta(delta);
+        }
+        isStop = false;
+        cycleTimer = cycletime;
+        if (socket.isConnected() && countTimer != null){
+            countTimer.start();
+        }
+    }
+
+    public void pauseTimer(){
+        isStop = true;
+        if (socket.isConnected() && countTimer != null){
+            countTimer.stop();
+        }
+        int deltaE = DataSupport.findLast(Sensor.class).getId();  // Sensor表中最后一个元素的主键id
+        int  taskE = DataSupport.findLast(Task.class).getId();  // Task表中最后一个元素
+        List<Sensor> listSensor = DataSupport.find(Task.class, taskE).getSensors(); // 该task对应的sensor链表
+        Sensor idEnd = listSensor.get(listSensor.size()-1); // sensor链表中最后一个元素
+        int idStart =idEnd.getId(); // 该最后一个元素在Sensor表中对应的主键id
+        Log.d("SocketService", "deltaE = "+deltaE);
+        Log.d("SocketService", "idStart = "+idStart);
+        int changerow = DataSupport.deleteAll(Sensor.class, "id > ? and id <= ?",Integer.toString(idStart), Integer.toString(deltaE)); // 删除未参与通量计算的sensor词条
+        Log.d("SocketService", "changerow = "+changerow);
+    }
+
+    /*定时发送数据
     private void sendBeatData(){
         if (timer == null){
             timer = new Timer();
@@ -245,8 +301,8 @@ public class SocketService extends Service {
                 }
             };
         }
-        timer.schedule(task, 0, 2000);
-    }
+        timer.schedule(task, 5000, 2000);
+    }  */
 
     /*释放资源*/
     private void releaseSocket(){
@@ -280,6 +336,10 @@ public class SocketService extends Service {
 
         if (connectThread != null){
             connectThread = null;
+        }
+
+        if (timerThread != null){
+            timerThread = null;
         }
 
         /*重新初始化socket*/

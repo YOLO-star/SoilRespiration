@@ -2,6 +2,7 @@ package com.example.soilrespiration.common;
 
 public class ShowAll {
 
+    private int id;
     private String time;
     private int address;
     private double temperature;
@@ -9,13 +10,18 @@ public class ShowAll {
     private double carbon;
     private double pressure;
 
-    public ShowAll(String time, int address, double temperature, double humidity, double carbon, double pressure){
+    public ShowAll(int id,String time, int address, double temperature, double humidity, double carbon, double pressure){
+        this.id = id;
         this.time = time;
         this.address = address;
         this.temperature = temperature;
         this.humidity = humidity;
         this.carbon = carbon;
         this.pressure = pressure;
+    }
+
+    public int getId(){
+        return id;
     }
 
     public String getTime(){

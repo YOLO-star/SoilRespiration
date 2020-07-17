@@ -2,6 +2,8 @@ package com.example.soilrespiration.util;
 
 import android.text.TextUtils;
 
+import java.text.DecimalFormat;
+
 public class ConvertUtil {
     //把String转化为double
     public static double convertToDouble(String number, double defaultValue){
@@ -25,5 +27,10 @@ public class ConvertUtil {
         }catch (Exception e){
             return defaultValue;
         }
+    }
+
+    public static String getDoubleNum(double num){
+        DecimalFormat format = new DecimalFormat("###.00");
+        return format.format(num);
     }
 }

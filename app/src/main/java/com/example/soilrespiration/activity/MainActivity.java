@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeAsUpIndicator(R.drawable.ic_menu);
         }
-        navView.setCheckedItem(R.id.nav_mail);
+
         navView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
@@ -59,8 +59,23 @@ public class MainActivity extends AppCompatActivity {
         cardView_analyze.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent_query = new Intent(MainActivity.this, QueryActivity.class);
+                Intent intent_query = new Intent(MainActivity.this, SuperQuery.class);
                 startActivity(intent_query);
+            }
+        });
+        CardView cardView_synchronization = (CardView) findViewById(R.id.card_purple);
+        cardView_synchronization.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent_upload = new Intent(MainActivity.this, UploadActivity.class);
+                startActivity(intent_upload);
+            }
+        });
+        CardView cardView_reserve = (CardView) findViewById(R.id.card_red);
+        cardView_reserve.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
             }
         });
         Log.d(TAG,"onCreate");
@@ -85,8 +100,9 @@ public class MainActivity extends AppCompatActivity {
             case android.R.id.home:
                 mDrawerLayout.openDrawer(GravityCompat.START);
                 break;
-            case R.id.settings:
-                Toast.makeText(this, "You clicked Settings", Toast.LENGTH_SHORT).show();
+            case R.id.nav_settings:
+                Intent intent = new Intent(MainActivity.this, Settings.class);
+                startActivity(intent);
                 break;
                 default:
         }

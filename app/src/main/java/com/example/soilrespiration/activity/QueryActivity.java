@@ -1,55 +1,48 @@
 package com.example.soilrespiration.activity;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.widget.Button;
 
 import com.example.soilrespiration.R;
 import com.example.soilrespiration.common.QueryAdapter;
 import com.example.soilrespiration.common.ShowAll;
 import com.example.soilrespiration.database.Sensor;
+import com.example.soilrespiration.database.Task;
 
 import org.litepal.crud.DataSupport;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
-
 public class QueryActivity extends Activity {
 
     private List<ShowAll> showAllList = new ArrayList<>();
     private List<Sensor> sensorList;
+    private int figure;
     QueryAdapter adapter;
-    @BindView(R.id.queryBtn)
-    Button queryAll;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_query);
-        ButterKnife.bind(this);
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.collect_recycle);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
         adapter = new QueryAdapter(showAllList);
         recyclerView.setAdapter(adapter);
-    }
+        Intent intent = getIntent();
+        figure = intent.getIntExtra("id_card", 1);
 
-    @OnClick(R.id.queryBtn)
-    public void onViewClicked(){
-        querySaved();
-    }
+        Task task  = DataSupport.find(Task.class, figure);
+        sensorList = task.getSensors();
 
-    private void querySaved(){
-        sensorList = DataSupport.findAll(Sensor.class);
         for (Sensor sensor : sensorList){
-            ShowAll temp = new ShowAll(sensor.getTime(), sensor.getAddress(), sensor.getTemperature(), sensor.getHumidity(), sensor.getCarbon(), sensor.getPressure());
+            ShowAll temp = new ShowAll(sensor.getId(),sensor.getTime(), sensor.getAddress(), sensor.getTemperature(), sensor.getHumidity(), sensor.getCarbon(), sensor.getPressure());
             adapter.addData(temp);
         }
     }
+
 }

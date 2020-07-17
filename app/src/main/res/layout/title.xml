@@ -11,7 +11,8 @@
         android:id="@+id/title_image"
         android:layout_width="160dp"
         android:layout_height="match_parent"
-        android:scaleType="centerCrop"/>
+        android:scaleType="centerCrop"
+        android:src="@drawable/theme"/>
 
     <TextView
         android:layout_width="match_parent"

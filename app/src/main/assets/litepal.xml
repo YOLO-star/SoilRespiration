@@ -6,6 +6,7 @@
 
     <list>
         <mapping class="com.example.soilrespiration.database.Sensor" />
+        <mapping class="com.example.soilrespiration.database.Task"/>
     </list>
 
 </litepal>

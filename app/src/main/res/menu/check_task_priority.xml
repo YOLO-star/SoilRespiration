@@ -2,9 +2,13 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/nav_settings"
-        android:icon="@drawable/ic_settings"
-        android:title="Settings"
+        android:id="@+id/cancel"
+        android:title="取消"
+        app:showAsAction="always"/>
+
+    <item
+        android:id="@+id/upload"
+        android:title="上传"
         app:showAsAction="always"/>
 
 </menu>

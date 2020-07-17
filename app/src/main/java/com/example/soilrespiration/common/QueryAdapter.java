@@ -17,6 +17,7 @@ public class QueryAdapter extends RecyclerView.Adapter<QueryAdapter.ViewHolder> 
     private List<ShowAll> mShowAllList;
 
     static class ViewHolder extends RecyclerView.ViewHolder{
+        TextView showId;
         TextView showTime;
         TextView showAddress;
         TextView showTemperature;
@@ -26,6 +27,7 @@ public class QueryAdapter extends RecyclerView.Adapter<QueryAdapter.ViewHolder> 
 
         public ViewHolder(View view){
             super(view);
+            showId = (TextView) view.findViewById(R.id.show_id);
             showTime = (TextView) view.findViewById(R.id.show_time);
             showAddress = (TextView) view.findViewById(R.id.show_address);
             showTemperature = (TextView) view.findViewById(R.id.show_temperature);
@@ -50,6 +52,7 @@ public class QueryAdapter extends RecyclerView.Adapter<QueryAdapter.ViewHolder> 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i) {
         ShowAll showAll = mShowAllList.get(i);
+        viewHolder.showId.setText(Integer.toString(showAll.getId()));
         viewHolder.showTime.setText(showAll.getTime());
         viewHolder.showAddress.setText(Integer.toString(showAll.getAddress()));
         viewHolder.showTemperature.setText(Double.toString(showAll.getTemperature()));
